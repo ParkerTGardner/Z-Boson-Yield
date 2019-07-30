@@ -9,7 +9,7 @@
 #include "TLatex.h"
 
 const Int_t NBINS = 7;
-Double_t edges[NBINS+1] = {0, 30, 60, 90, 120, 155, 190, 250};
+Double_t edges[NBINS+1] = {0, 30, 60, 90, 120, 155, 190, 220};
 
 int findNtrkBin(const double& nTrk)
 {
@@ -19,7 +19,7 @@ int findNtrkBin(const double& nTrk)
    return -1;
 }
 
-void test3()
+void 3d1d()
 {
    TH1::SetDefaultSumw2(kTRUE); 
 //canvas building
@@ -122,64 +122,73 @@ void test3()
           //break;
           }
       }
-
       hNtrkUnchanged->Fill(tree.Ntrkoffline());
+      
+}
+
+
+
+      //if(passCut)
+          //hNtrkOffline->Fill(tree.Ntrkoffline());
+     
+
+//      hNtrkUnchanged->Fill(tree.Ntrkoffline());
       //passCut = false;
 
-      for(unsigned int iCand=0; iCand<tree.candSize(); iCand++){
-          int index = findNtrkBin(tree.Ntrkoffline());
-	  if(index==-1) continue;
-
-//Kinematic
-          bool passEtaD1D2 = abs(tree.EtaD1()[iCand])<2.4 && abs(tree.EtaD2()[iCand])<2.4;
-          //bool passEtaZ = tree.eta()[iCand]<2.4;
-          bool passpT = tree.pTD1()[iCand]>20 && tree.pTD2()[iCand]>20;          
-          bool passMass = tree.mass()[iCand]>60 && tree.mass()[iCand]<120;
-//Event 
-          const bool passTriggerMuonPair = tree.trigHLT()[1] && (tree.trigMuon1()[1].at(iCand) || tree.trigMuon2()[1].at(iCand));
-          const bool pileUpCut = tree.evtSel()[4];
-          const bool goodEvt = tree.evtSel()[0];
-//Quality
-          bool passTightMuonPair = tree.tightMuon1()[iCand] && tree.tightMuon2()[iCand];
-
-          //if (!passTightMuonPair || !goodEvt || !passTriggerMuonPair || !pileUpCut ) continue;
-          if(
-            //Kinematic*****
-            //passEtaZ && 
-            (passEtaD1D2)
-            && (passpT)
-            && (passMass) 
-            //Event*********
-            && (passTriggerMuonPair) 
-            && (pileUpCut)
-            && (goodEvt)
-            //Quality*******
-            && (passTightMuonPair)
-          ) passCut = true;
-          
-//Ignore, other versions of cutting
-          //if (!passTightMuonPair || !goodEvt || !passTriggerMuonPair || !pileUpCut ) continue;
-          //if(passTightMuonPair && passMass && passEta && passpT && passTriggerMuonPair && goodEvt && pileUpCut) passCut = true;          
-          //if(passTightMuonPair) passCut = true;
-          //if(passMass) passCut = true;
-          //if(passpT) passCut = true;
-          //if(passTriggerMuonPair) passCut = true;          
-          //if(passEtaZ) passCut = true;
-          //if(passEtaD1D2) passCut = true;
-          //if(pileUpCut) passCut = true;
-          //if(goodEvt) passCut = true;
-      
-          if(passCut){
-              hBin[index]->Fill(tree.mass()[iCand]);
-              passCut=false;
-             // if(tree.chargeD2()[iCand] == tree.chargeD1()[iCand]){
-             // PCSamesign++;
-             // PCSamesignBin[index]++;
-             // }
-             }
-      }
-
-   }
+//     for(unsigned int iCand=0; iCand<tree.candSize(); iCand++){
+//          int index = findNtrkBin(tree.Ntrkoffline());
+//	  if(index==-1) continue;
+//
+////Kinematic
+//          bool passEtaD1D2 = abs(tree.EtaD1()[iCand])<2.4 && abs(tree.EtaD2()[iCand])<2.4;
+//          //bool passEtaZ = tree.eta()[iCand]<2.4;
+//          bool passpT = tree.pTD1()[iCand]>15 && tree.pTD2()[iCand]>10;          
+//          bool passMass = tree.mass()[iCand]>60 && tree.mass()[iCand]<120;
+////Event 
+//          const bool passTriggerMuonPair = tree.trigHLT()[1] && (tree.trigMuon1()[1].at(iCand) || tree.trigMuon2()[1].at(iCand));
+//          const bool pileUpCut = tree.evtSel()[4];
+//          const bool goodEvt = tree.evtSel()[0];
+////Quality
+//          bool passTightMuonPair = tree.tightMuon1()[iCand] && tree.tightMuon2()[iCand];
+//
+//          //if (!passTightMuonPair || !goodEvt || !passTriggerMuonPair || !pileUpCut ) continue;
+//          if(
+//            //Kinematic*****
+//            //passEtaZ && 
+//            (passEtaD1D2)
+//            && (passpT)
+//            && (passMass) 
+//            //Event*********
+//            && (passTriggerMuonPair) 
+//            && (pileUpCut)
+//            && (goodEvt)
+//            //Quality*******
+//            && (passTightMuonPair)
+//          ) passCut = true;
+//          
+////Ignore, other versions of cutting
+//          //if (!passTightMuonPair || !goodEvt || !passTriggerMuonPair || !pileUpCut ) continue;
+//          //if(passTightMuonPair && passMass && passEta && passpT && passTriggerMuonPair && goodEvt && pileUpCut) passCut = true;          
+//          //if(passTightMuonPair) passCut = true;
+//          //if(passMass) passCut = true;
+//          //if(passpT) passCut = true;
+//          //if(passTriggerMuonPair) passCut = true;          
+//          //if(passEtaZ) passCut = true;
+//          //if(passEtaD1D2) passCut = true;
+//          //if(pileUpCut) passCut = true;
+//          //if(goodEvt) passCut = true;
+//      
+//      //    if(passCut){
+//      //        hBin[index]->Fill(tree.mass()[iCand]);
+//      //        passCut=false;
+//             // if(tree.chargeD2()[iCand] == tree.chargeD1()[iCand]){
+//             // PCSamesign++;
+//             // PCSamesignBin[index]++;
+//             // }
+//             }
+//      }
+//
+//   }
 
 
 std::cout << totSelectedZ  << std::endl;
@@ -218,11 +227,12 @@ std::cout << totSelectedZ  << std::endl;
 //std::cout << nPassPt<< std::endl;
 //std::cout << hNtrkOffline->GetBinContent(6) << std::endl;
   
-   for(int ih=0; ih<NBINS; ih++){
-       c4->cd(ih+1);
-       hBin[ih]->SetStats(false);
-       hBin[ih]->Draw();
-   }
+   //for(int ih=0; ih<NBINS; ih++){
+       //c4->cd(ih+1);
+       //hBin[ih]->SetStats(false);
+       //hBin[ih]->Draw();
+  // }
+
 
    //TH1D* hOriginalBin = (TH1D*) f2->Get("hOriginalBin");
    TH1D* hOriginalBin = (TH1D*) f2->Get("hmult");
@@ -247,14 +257,14 @@ std::cout << totSelectedZ  << std::endl;
    hNtrkOffline->Draw();
    c1->Print("hNtrkOffline.png");
 
-   c2->cd();
-   c2->Divide(2, 1);
-   c2->cd(1);
-   hNewBinning->Draw("E");
-   c2->cd(2);
+   //c2->cd();
+   //c2->Divide(2, 1);
+   //c2->cd(1);
+   //hNewBinning->Draw("E");
+   //c2->cd(2);
    //hOriginalBin->GetXaxis()->SetRangeUser(0, 190);
-   hOriginalBin->Draw("E");
-   c2->Print("hNewBinning.png");
+   //hOriginalBin->Draw("E");
+   //c2->Print("hNewBinning.png");
 
    c3->cd();
    TH1D *hRatio = (TH1D*)hNtrkOffline->Clone();
@@ -270,7 +280,7 @@ std::cout << totSelectedZ  << std::endl;
    hRatio->Draw();
    c3->Print("hRatio.png");
    
-   c4->Print("hBinMD.png");
+   //c4->Print("hBinMD.png");
 
    c5->cd();
    hNtrkUnchanged->Draw();
