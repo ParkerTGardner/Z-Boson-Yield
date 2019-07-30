@@ -90,7 +90,7 @@ void test4()
 	long int PosSelectedZ =0;
 	long int NegSelectedZ =0;
 	
-	for(long int jentry=0; jentry < nevents ; jentry++){
+	for(long int jentry=0; jentry < 1e5 ; jentry++){
 		
 		bool passCut = false;//reset at begining of loop.
 		
@@ -346,6 +346,10 @@ void test4()
 	pTMean[4]->Draw("P");
 	pTMean[5]->Draw("P");
 	pTMean[6]->Draw("P");
+
+	c1->Print("pTdist.png");
+	c5->Print("3DpTntrk.png");
+	c7->Print("pTbyNtrk.png");
 	
 	std::cout <<  totSelectedZ  << std::endl;
 	}
