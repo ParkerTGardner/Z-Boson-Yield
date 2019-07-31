@@ -34,9 +34,10 @@ void test5()
 	//Creating histograms
 	//*********************************
 	
-	int NBINS=5;
-        TH1D* DenomGenCan = new TH1D("DenomGenCan", "", NBINS,0,100);
-        TH1D* NumRecoCan = new TH1D("NumRecoCan", "", NBINS,0,100);
+	int pTbins=5;
+	int ybins=5;
+        TH2D* DenomGenCan = new TH2D("DenomGenCan", "", pTbins,0,200, ybins, 0, 3);
+        TH2D* NumRecoCan = new TH2D("NumRecoCan", "", pTbins,0,200, ybins, 0, 3);
 
         //*********************************
         //Primary loop
@@ -55,31 +56,39 @@ void test5()
 			std::cout << "Invalid entry!" << std::endl; return; }
 		
 		for(unsigned int iCand_gen=0; iCand_gen<tree.candSize_gen(); iCand_gen++){
-			
+			IndexMark=iCand_gen;
 			SkipReco = false;
 			//Accounting for rapidity abd pseudorapidity when considering muon pT
-			tree.eta()[iCand_gen]=(evtCol *    ( tree.eta()[iCand_gen] +0.465   ));
-			tree.y()[iCand_gen]=(evtCol *      ( tree.y()[iCand_gen]   +0.465   ));
+			//tree.eta_gen()[iCand_gen]=(evtCol *    ( tree.eta_gen()[iCand_gen] +0.465   ));
+			//tree.y_gen()[iCand_gen]=(evtCol *      ( tree.y_gen()[iCand_gen]   +0.465   ));
 			
 
 			//making cuts and filling the gen numerator for effiecency calc	
 			if(tree.pTD1_gen()[iCand_gen]<20 || tree.pTD2_gen()[iCand_gen]<20){
 				SkipReco=true;
-				break;
+				continue;
 				}
-			if(tree.pTD1_gen()[iCand_gen]>20 && tree.pTD2_gen()[iCand_gen]>20){
-				DenomGenCan->Fill(tree.pT()[iCand_gen]); //should be zero selection, redund because of previous line.
-				IndexMark=iCand_gen;
+			if(
+				tree.pTD1_gen()[iCand_gen]>20 
+				&& tree.pTD2_gen()[iCand_gen]>20
+				&& abs(tree.EtaD1_gen()[iCand_gen])<2.4
+				&& abs(tree.EtaD2_gen()[iCand_gen])<2.4
+				&& tree.PID_gen()[iCand_gen] == 23
+				//&& tree.mass()[tree.RecIdx_gen()[IndexMark]]>60
+				//&& tree.mass()[tree.RecIdx_gen()[IndexMark]]<120
+				){
+				DenomGenCan->Fill(tree.pT_gen()[IndexMark], tree.y_gen()[iCand_gen]); //should be zero selection, redund because of previous line.
+				//IndexMark=iCand_gen;
 				break;
 				}
 			}
-		if(SkipReco){continue;} //break to the next EVENT? 
+		if(SkipReco == true){continue;} //break to the next EVENT? 
 		//*********************************
 		//KINEMATIC
 		// only negative
-		bool passNegY = 0>=tree.y()[tree.RecIdx_gen()[IndexMark]] && tree.y()[tree.RecIdx_gen()[IndexMark]]> -1.935;
+		//bool passNegY = 0>=tree.y()[tree.RecIdx_gen()[IndexMark]] && tree.y()[tree.RecIdx_gen()[IndexMark]]> -1.935;
 		// only positive*****
-		bool passPosY = 0<=tree.y()[tree.RecIdx_gen()[IndexMark]] && tree.y()[tree.RecIdx_gen()[IndexMark]]<1.935;
+		//bool passPosY = 0<=tree.y()[tree.RecIdx_gen()[IndexMark]] && tree.y()[tree.RecIdx_gen()[IndexMark]]<1.935;
 		// PM eta
 		bool passAllEtaD1D2 = abs(tree.EtaD1()[tree.RecIdx_gen()[IndexMark]])<2.4 && abs(tree.EtaD2()[tree.RecIdx_gen()[IndexMark]])<2.4;
 		//bool passEtaZ = tree.eta()[iCand]<2.4;
@@ -96,7 +105,7 @@ void test5()
 		if(
 			//Kinematic******
 			(passAllEtaD1D2) 
-			//passEtaZ
+			// passEtaZ
 			&& (passpT) 
 			&& (passMass) 
 			//Event***********
@@ -107,7 +116,7 @@ void test5()
 			&& (passTightMuonPair)
 			){ passCut = true;}
 		if(passCut){
-			NumRecoCan->Fill(tree.pT()[tree.RecIdx_gen()[IndexMark]]);
+			NumRecoCan->Fill(tree.pT_gen()[IndexMark],tree.y_gen()[IndexMark]);
 			}
 		passCut = false; 
 		}
