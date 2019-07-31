@@ -36,8 +36,9 @@ void test5()
 	
 	int pTbins=5;
 	int ybins=5;
-        TH2D* DenomGenCan = new TH2D("DenomGenCan", "", pTbins,0,200, ybins, 0, 3);
-        TH2D* NumRecoCan = new TH2D("NumRecoCan", "", pTbins,0,200, ybins, 0, 3);
+        TH2D* DenomGenCan = new TH2D("DenomGenCan", "", pTbins,0,200, ybins, 0, 2.4);
+        TH2D* NumRecoCan = new TH2D("NumRecoCan", "", pTbins,0,200, ybins, 0, 2.4);
+	TH2D* newNRC = new TH2D("newNRC", "", pTbins,0,200, ybins, 0, 2.4);
 
         //*********************************
         //Primary loop
@@ -121,8 +122,53 @@ void test5()
 		passCut = false; 
 		}
 	NumRecoCan->Divide(DenomGenCan);
-	for(int i=1; i<NBINS+1; i++){
-		Double_t See =NumRecoCan->GetBinContent(i);
-		std::cout <<  See  << std::endl;
+	Double_t See[pTbins];
+	for(int j=1; j<ybins+1; j++){
+		for(int i=1; i<pTbins+1; i++){
+			See[i] = NumRecoCan->GetBinContent(i,j);
+			std::cout << " * " << Form("%.3f",See[i]);
+			}
+		std::cout << " * " <<'\n';
 		}
+
+	for(int j=1; j<ybins+1; j++){
+                for(int i=1; i<pTbins+1; i++){
+                        newNRC->SetBinContent(i,j,1-(NumRecoCan->GetBinContent(i,j)));
+			}
+		}
+
+	TCanvas* c1 = new TCanvas("c1", "", 1600, 800);
+	c1->Divide(2,1);
+	c1->cd(1);
+	NumRecoCan ->Scale(100);
+	NumRecoCan ->SetTitle("pPb MC Efficiency");
+	NumRecoCan ->GetZaxis()->SetTitle("%");
+        NumRecoCan ->GetZaxis()->SetRangeUser(0,100);
+	NumRecoCan ->GetZaxis()->CenterTitle();
+	NumRecoCan ->GetZaxis()->SetTitleOffset(1.5);
+	NumRecoCan ->GetYaxis()->SetTitle("y_gen");
+	NumRecoCan ->GetYaxis()->CenterTitle();
+	NumRecoCan ->GetXaxis()->SetTitle("pT_gen");
+	NumRecoCan ->GetXaxis()->CenterTitle();
+	NumRecoCan ->GetYaxis()->SetTitleOffset(2);
+	NumRecoCan ->GetXaxis()->SetTitleOffset(2);
+	NumRecoCan ->SetStats(false);
+	NumRecoCan ->Draw("Lego2");
+
+	c1->cd(2);
+        newNRC ->Scale(100);
+        newNRC ->SetTitle("pPb MC Efficiency (100-%)");
+        newNRC ->GetZaxis()->SetTitle("%");
+        newNRC ->GetZaxis()->SetRangeUser(0,20);
+        newNRC ->GetZaxis()->CenterTitle();
+        newNRC ->GetZaxis()->SetTitleOffset(1.5);
+        newNRC ->GetYaxis()->SetTitle("y_gen");
+        newNRC ->GetYaxis()->CenterTitle();
+        newNRC ->GetXaxis()->SetTitle("pT_gen");
+        newNRC ->GetXaxis()->CenterTitle();
+        newNRC ->GetYaxis()->SetTitleOffset(2);
+        newNRC ->GetXaxis()->SetTitleOffset(2);
+        newNRC ->SetStats(false);
+        newNRC ->Draw("Lego2");
+
 }
