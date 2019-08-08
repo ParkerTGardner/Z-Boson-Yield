@@ -34,8 +34,8 @@ void test6()
 	//Creating histograms
 	//*********************************
 	const Int_t NBINS=1;
-	int pTbins=5;
-	int ybins=5;
+	const int pTbins=10;
+	const int ybins=5;
 	
 	//Double_t edges[NBINS+1] = {0, 30, 60, 90, 120, 155, 190, 250};
         Double_t edges[NBINS+1] = {0,250};
@@ -62,11 +62,13 @@ void test6()
         //Primary loop
         //*********************************
 	
-	for(long int jentry=0; jentry < nevents ; jentry++){
+	int IndexMark=1;
+	//for(long int jentry=0; jentry < nevents ; jentry++){
+	for(long int jentry=0; jentry < nevents; jentry++){
 		
 		bool passCut = false;//reset at begining of loop.
                 bool SkipReco = false;
-		int IndexMark;
+		//int IndexMark;
 		
 		//Progress Marker
 		if(!(jentry % 100000)){
@@ -78,8 +80,8 @@ void test6()
 			IndexMark=iCand_gen;
 			SkipReco = false;
 			//Accounting for rapidity abd pseudorapidity when considering muon pT
-			//tree.eta_gen()[iCand_gen]=(evtCol *    ( tree.eta_gen()[iCand_gen] +0.465   ));
-			//tree.y_gen()[iCand_gen]=(evtCol *      ( tree.y_gen()[iCand_gen]   +0.465   ));
+			tree.eta_gen()[iCand_gen]=(evtCol *    ( tree.eta_gen()[iCand_gen] +0.465   ));
+			tree.y_gen()[iCand_gen]=(evtCol *      ( tree.y_gen()[iCand_gen]   +0.465   ));
 			
 
 			//making cuts and filling the gen numerator for effiecency calc	
@@ -154,17 +156,17 @@ void test6()
 		std::cout << " * " <<'\n';
 		NumRecoCan[ih]->Divide(DenomGenCan[ih]);
 		Double_t See[pTbins];
-		for(int j=1; j<ybins+1; j++){
-			for(int i=1; i<pTbins+1; i++){
-				See[i] = NumRecoCan[ih]->GetBinContent(i,j);
+		for(int j=0; j<ybins; j++){
+			for(int i=0; i<pTbins; i++){
+				See[i] = NumRecoCan[ih]->GetBinContent(i+1,j+1);
 				std::cout << " * " << Form("%.3f",See[i]);
 				}
 			std::cout << " * " <<'\n';
 			}
 	
-		for(int j=1; j<ybins+1; j++){
-	                for(int i=1; i<pTbins+1; i++){
-	                        newNRC[ih]->SetBinContent(i,j,1-(NumRecoCan[ih]->GetBinContent(i,j)));
+		for(int j=0; j<ybins; j++){
+	                for(int i=0; i<pTbins; i++){
+	                        newNRC[ih]->SetBinContent(i+1,j+1,1-(NumRecoCan[ih]->GetBinContent(i+1,j+1)));
 				}
 			}
 		}
@@ -179,6 +181,7 @@ void test6()
 		c.push_back(new TCanvas(Form("c%d",ih), "", 1300, 650));
 		c[ih]->Divide(2,1);
 	
+
 		c[ih]->cd(1);
 		NumRecoCan[ih] ->Scale(100);
 		NumRecoCan[ih] ->SetTitle(Form("pPb MC Efficiency Ntrk %d", ih));
@@ -210,71 +213,80 @@ void test6()
 	        newNRC[ih] ->GetXaxis()->SetTitleOffset(2);
 	        newNRC[ih] ->SetStats(false);
 	        newNRC[ih] ->Draw("Lego2");
+
+		}
+
+	//std::vector<float> xvec;
+	
+	//This set up will give me several lines of % verus pT axis. lines split by y 
+	float xvecpT[ybins][pTbins];
+	float yvecpT[ybins][pTbins];
+        float yvecpTE[ybins][pTbins];
+	float xvecpTEX[ybins][pTbins]={0.};	
+
+	//This set up will give me several lines of % verus y axis. lines split by pT
+	
+	float xvecy[pTbins][ybins];
+	float yvecy[pTbins][ybins];
+        float yvecyE[pTbins][ybins];
+	float xvecyEX[pTbins][ybins]={0.};
+
+	for(int ih=0; ih<pTbins; ih++){
+		for(int jh=0; jh<ybins; jh++){
+			
+			xvecy[ih][jh]=((TAxis*)NumRecoCan[0]->GetYaxis())->GetBinCenter(jh+1);
+			yvecy[ih][jh]=NumRecoCan[0]->GetBinContent(ih+1,jh+1);
+			yvecyE[ih][jh]=NumRecoCan[0]->GetBinError(ih+1,jh+1);
+			}
 		}
 
 
-//        c3->cd(1);
-//        NumRecoCan[2] ->Scale(100);
-//        NumRecoCan[2] ->SetTitle("pPb MC Efficiency Ntrk3");
-//        NumRecoCan[2] ->GetZaxis()->SetTitle("%");
-//        NumRecoCan[2] ->GetZaxis()->SetRangeUser(0,100);
-//        NumRecoCan[2] ->GetZaxis()->CenterTitle();
-//        NumRecoCan[2] ->GetZaxis()->SetTitleOffset(1.5);
-//        NumRecoCan[2] ->GetYaxis()->SetTitle("y_gen");
-//        NumRecoCan[2] ->GetYaxis()->CenterTitle();
-//        NumRecoCan[2] ->GetXaxis()->SetTitle("pT_gen");
-//        NumRecoCan[2] ->GetXaxis()->CenterTitle();
-//        NumRecoCan[2] ->GetYaxis()->SetTitleOffset(2);
-//        NumRecoCan[2] ->GetXaxis()->SetTitleOffset(2);
-//        NumRecoCan[2] ->SetStats(false);
-//        NumRecoCan[2] ->Draw("Lego2");
-//
-//        c3->cd(2);
-//        newNRC[2] ->Scale(100);
-//        newNRC[2] ->SetTitle("pPb MC Efficiency Ntrk3 (100-%)");
-//        newNRC[2] ->GetZaxis()->SetTitle("%");
-//        newNRC[2] ->GetZaxis()->SetRangeUser(0,20);
-//        newNRC[2] ->GetZaxis()->CenterTitle();
-//        newNRC[2] ->GetZaxis()->SetTitleOffset(1.5);
-//        newNRC[2] ->GetYaxis()->SetTitle("y_gen");
-//        newNRC[2] ->GetYaxis()->CenterTitle();
-//        newNRC[2] ->GetXaxis()->SetTitle("pT_gen");
-//        newNRC[2] ->GetXaxis()->CenterTitle();
-//        newNRC[2] ->GetYaxis()->SetTitleOffset(2);
-//        newNRC[2] ->GetXaxis()->SetTitleOffset(2);
-//        newNRC[2] ->SetStats(false);
-//        newNRC[2] ->Draw("Lego2");
-//
-//        c2->cd(1);
-//        NumRecoCan[1] ->Scale(100);
-//        NumRecoCan[1] ->SetTitle("pPb MC Efficiency Ntrk2");
-//        NumRecoCan[1] ->GetZaxis()->SetTitle("%");
-//        NumRecoCan[1] ->GetZaxis()->SetRangeUser(0,100);
-//        NumRecoCan[1] ->GetZaxis()->CenterTitle();
-//        NumRecoCan[1] ->GetZaxis()->SetTitleOffset(1.5);
-//        NumRecoCan[1] ->GetYaxis()->SetTitle("y_gen");
-//        NumRecoCan[1] ->GetYaxis()->CenterTitle();
-//        NumRecoCan[1] ->GetXaxis()->SetTitle("pT_gen");
-//        NumRecoCan[1] ->GetXaxis()->CenterTitle();
-//        NumRecoCan[1] ->GetYaxis()->SetTitleOffset(2);
-//        NumRecoCan[1] ->GetXaxis()->SetTitleOffset(2);
-//        NumRecoCan[1] ->SetStats(false);
-//        NumRecoCan[1] ->Draw("Lego2");
-//
-//        c2->cd(2);
-//        newNRC[1] ->Scale(100);
-//        newNRC[1] ->SetTitle("pPb MC Efficiency Ntrk2 (100-%)");
-//        newNRC[1] ->GetZaxis()->SetTitle("%");
-//        newNRC[1] ->GetZaxis()->SetRangeUser(0,20);
-//        newNRC[1] ->GetZaxis()->CenterTitle();
-//        newNRC[1] ->GetZaxis()->SetTitleOffset(1.5);
-//        newNRC[1] ->GetYaxis()->SetTitle("y_gen");
-//        newNRC[1] ->GetYaxis()->CenterTitle();
-//        newNRC[1] ->GetXaxis()->SetTitle("pT_gen");
-//        newNRC[1] ->GetXaxis()->CenterTitle();
-//        newNRC[1] ->GetYaxis()->SetTitleOffset(2);
-//        newNRC[1] ->GetXaxis()->SetTitleOffset(2);
-//        newNRC[1] ->SetStats(false);
-//        newNRC[1] ->Draw("Lego2");
+
+        for(int ih=0; ih<ybins; ih++){
+                for(int jh=0; jh<pTbins; jh++){
+                
+                        xvecpT[ih][jh]=((TAxis*)NumRecoCan[0]->GetXaxis())->GetBinCenter(jh+1);
+                        yvecpT[ih][jh]=NumRecoCan[0]->GetBinContent(jh+1,ih+1);
+                        yvecpTE[ih][jh]=NumRecoCan[0]->GetBinError(jh+1,ih+1);
+			}
+                }
+	
+        TCanvas* cXY1 = new TCanvas("cXY1", "", 1300, 650);
+	int XCI[ybins]={1,2,3,4,5};
+        int YCI[pTbins]={0,1,2,3,4,5,6,7,8,9};
+        cXY1->Divide(2,1);
+
+        std::vector<TGraphErrors*> cx;
+        std::vector<TGraphErrors*> cy;
+
+
+	cXY1->SetFillColor(42);
+        TMultiGraph *mgx = new TMultiGraph();
+        TMultiGraph *mgy = new TMultiGraph();
+
+        //cx[0]=new TGraphErrors(pTbins,xvecpT[0],yvecpT[0],xvecpTEX[0],yvecpTE[0]);
+	//cx[0]->Draw("AP");
+
+	for(int ih=0; ih<ybins; ih++){
+		cx.push_back(new TGraphErrors(pTbins,xvecpT[ih],yvecpT[ih],xvecpTEX[ih],yvecpTE[ih]));
+		cx[ih]->SetMarkerStyle(22);
+                cx[ih]->SetLineColor(XCI[ih]);
+		mgx->Add(cx[ih],"ALP");
+		}
+        for(int ih=0; ih<pTbins; ih++){
+                cy.push_back(new TGraphErrors(ybins,xvecy[ih],yvecy[ih],xvecyEX[ih],yvecyE[ih]));
+                cy[ih]->SetMarkerStyle(22);
+                cy[ih]->SetLineColor(YCI[ih]);
+                mgy->Add(cy[ih],"ALP");
+                }
+
+cXY1->cd(1);
+cXY1->cd(1)->SetFillColor(42);
+mgx->Draw("ALP");
+cXY1->cd(2);
+cXY1->cd(2)->SetFillColor(42);
+mgy->Draw("ALP");
+
+
 
 }
