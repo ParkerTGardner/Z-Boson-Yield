@@ -9,6 +9,9 @@
 #include "TLegend.h"
 #include "TGraphErrors.h"
 #include "TMultiGraph.h"
+#include "tnp_weight.h"
+
+
 
 void test6()
 {
@@ -18,17 +21,17 @@ void test6()
 	//Getting data/files
 	//*********************************
 
-	const auto& inputFile = "/storage1/users/wl33/DiMuTrees/pPb2016/Tree/VertexCompositeTree_DYToMuMu_pPb-Bst_pPb816Summer16_DiMuMC.root";
-	const auto& treeDir = "dimucontana_mc"; // For MC use dimucontana_mc
+	//const auto& treeDir = "dimucontana_mc"; // For MC use dimucontana_mc
+	//const auto& inputFile = "/storage1/users/wl33/DiMuTrees/pPb2016/Tree/VertexCompositeTree_DYToMuMu_pPb-Bst_pPb816Summer16_DiMuMC.root";
+                //VertexCompositeTree treepPb;
+	//const auto& inputFile = "/storage1/users/wl33/DiMuTrees/pPb2016/Tree/VertexCompositeTree_DYToMuMu_PbP-Bst_pPb816Summer16_DiMuMC.root";
+	        //VertexCompositeTree treePbP;
+
 	int evtCol = 1; //pPb
         //evtCol = -1; //Pbp
-	VertexCompositeTree tree;
 
-	// For pPb, find out the run on data
-	if (!tree.GetTree(inputFile, treeDir)){
-		std::cout << "Invalid tree!" << std::endl; return; }
-	long int nevents = tree.GetEntries();
-	std::cout <<  nevents  << std::endl; 
+
+
 
 	//*********************************
 	//Creating histograms
@@ -43,15 +46,24 @@ void test6()
         TH2D* DenomGenCan[NBINS];
 	TH2D* NumRecoCan[NBINS];
         TH2D* newNRC[NBINS];
+        
+	TH1D* SF1h = new TH1D("SF1h", "",20, 0.8,1);
+	TH1D* SF2h = new TH1D("SF2h", "",20, 0.8,1);
+	TH1D* SF3Nh = new TH1D("SFNh", "",20, 0.8,1);
+	TH1D* SF3Dh = new TH1D("SFDh", "",20, 0.8,1);
+        TH1D* SFallh = new TH1D("SFallh", "",20, 0.8,1);
+
+	float etaedge =2.4;
+	float ptedge = 200;
 
         for(int ih=0; ih<NBINS; ih++){
-                DenomGenCan[ih] = new TH2D(Form("DGC%d", ih), "", pTbins,0, 200, ybins, 0, 2.4);
+                DenomGenCan[ih] = new TH2D(Form("DGC%d", ih), "", pTbins,0, ptedge, ybins, 0, etaedge);
                 }
         for(int ih=0; ih<NBINS; ih++){
-                NumRecoCan[ih] = new TH2D(Form("NRC%d", ih), "", pTbins,0, 200, ybins, 0, 2.4);
+                NumRecoCan[ih] = new TH2D(Form("NRC%d", ih), "", pTbins,0, ptedge, ybins, 0, etaedge);
                 }
         for(int ih=0; ih<NBINS; ih++){
-                newNRC[ih] = new TH2D(Form("newNRC%d", ih), "", pTbins,0, 200, ybins, 0, 2.4);
+                newNRC[ih] = new TH2D(Form("newNRC%d", ih), "", pTbins,0, ptedge, ybins, 0, etaedge);
                 }
 
 	//TH2D* DenomGenCan = new TH2D("DenomGenCan", "", pTbins,0,200, ybins, 0, 2.4);
@@ -63,7 +75,30 @@ void test6()
         //*********************************
 	
 	int IndexMark=1;
+	
+	for(int treechoice=0; treechoice<2;  treechoice++){
+
+	std::string inputFile;
+	VertexCompositeTree tree;
+	if(treechoice == 0){
+	inputFile = "/storage1/users/wl33/DiMuTrees/pPb2016/Tree/VertexCompositeTree_DYToMuMu_pPb-Bst_pPb816Summer16_DiMuMC.root";
+	}
+
+	if(treechoice == 1){
+	inputFile = "/storage1/users/wl33/DiMuTrees/pPb2016/Tree/VertexCompositeTree_DYToMuMu_PbP-Bst_pPb816Summer16_DiMuMC.root";
+	}
+
+        const auto& treeDir = "dimucontana_mc"; // For MC use dimucontana_mc
+
+	// For pPb, find out the run on data
+	if (!tree.GetTree(inputFile, treeDir)){
+		std::cout << "Invalid tree!" << std::endl; return; }
+	long int nevents = tree.GetEntries();
+	std::cout <<  nevents  << std::endl; 
+
+
 	//for(long int jentry=0; jentry < nevents ; jentry++){
+	//for(long int jentry=0; jentry < nevents; jentry++){
 	for(long int jentry=0; jentry < nevents; jentry++){
 		
 		bool passCut = false;//reset at begining of loop.
@@ -143,13 +178,27 @@ void test6()
 		if(passCut){
 			for(int ih=0; ih<NBINS; ih++){
 				if(tree.Ntrkoffline() > edges[ih] && tree.Ntrkoffline() < edges[ih+1]){
-					NumRecoCan[ih]->Fill(tree.pT_gen()[IndexMark],tree.y_gen()[IndexMark]);
+					//Mu ID scale
+					float idSF1 = tnp_weight_muid_ppb(tree.pTD1()[tree.RecIdx_gen()[IndexMark]], tree.EtaD1()[tree.RecIdx_gen()[IndexMark]] , 0);
+					float idSF2 = tnp_weight_muid_ppb(tree.pTD2()[tree.RecIdx_gen()[IndexMark]], tree.EtaD2()[tree.RecIdx_gen()[IndexMark]] , 0);
+					float idSF3Num = (1-(1-tnp_weight_trg_ppb(tree.EtaD1()[tree.RecIdx_gen()[IndexMark]], 200))*(1-tnp_weight_trg_ppb(tree.EtaD2()[tree.RecIdx_gen()[IndexMark]], 200)));
+                                        float idSF3Den = (1-(1-tnp_weight_trg_ppb(tree.EtaD1()[tree.RecIdx_gen()[IndexMark]], 300))*(1-tnp_weight_trg_ppb(tree.EtaD2()[tree.RecIdx_gen()[IndexMark]], 300)));
+					float SF=idSF1*idSF2*idSF3Num/idSF3Den;
+                                	SF1h->Fill(idSF1);
+                                        SF2h->Fill(idSF2);
+                                        SF3Nh->Fill(idSF3Num);
+                                        SF3Dh->Fill(idSF3Den);
+					SFallh->Fill(SF);
+					NumRecoCan[ih]->Fill(tree.pT_gen()[IndexMark],tree.y_gen()[IndexMark], SF);
 					}
 				}
 			}
 		passCut = false; 
 		}
 
+	}
+	int Entry4 = NumRecoCan[0]->GetEntries();
+	int Entry5 = DenomGenCan[0]->GetEntries();
 
 	for(int ih=0; ih<NBINS; ih++){
 		std::cout << "Array for Ntrk Bin #" << ih;
@@ -287,6 +336,50 @@ cXY1->cd(2);
 cXY1->cd(2)->SetFillColor(42);
 mgy->Draw("ALP");
 
+TCanvas* cSF = new TCanvas("SF", "", 1400, 650);
+cSF->Divide(2,2);
+
+
+cSF->cd(1);
+gPad->SetLogy(1);
+SF1h ->SetTitle("SF1h");
+SF1h->Draw();
+
+cSF->cd(2);
+gPad->SetLogy(1);
+SF1h ->SetTitle("SF2h");
+SF2h->Draw();
+
+cSF->cd(3);
+gPad->SetLogy(1);
+SF1h ->SetTitle("SF3Nh");
+SF3Nh->Draw();
+
+cSF->cd(4);
+gPad->SetLogy(1);
+SF1h ->SetTitle("SF3Dh");
+SF3Dh->Draw();
+
+TCanvas* cSFall = new TCanvas("SFall", "", 800, 800);
+gPad->SetLogy(1); 
+SF1h ->SetTitle("SFall");
+SFallh->Draw();
+
+
+int Entry1 = NumRecoCan[0]->GetEntries();
+int Entry2 = newNRC[0]->GetEntries();
+int Entry3 = SFallh->GetEntries();
+
+
+std::cout << "NRC/denom " << Entry1 <<'\n';
+
+std::cout << "newNRC " << Entry2 <<'\n';
+
+std::cout << "SFall " << Entry3 <<'\n';
+
+std::cout << "Num " << Entry4 <<'\n';
+
+std::cout << "Denom " << Entry5 <<'\n';
 
 
 }
